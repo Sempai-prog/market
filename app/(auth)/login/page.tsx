@@ -13,7 +13,7 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || '/dashboard';
-  const { login } = useAuth();
+  const { login } = useAuth(); // Pour mettre à jour le contexte client après succès API (optionnel si rechargement complet)
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
@@ -39,13 +39,14 @@ export default function LoginPage() {
         throw new Error(result.error || "Une erreur est survenue");
       }
 
-      // INTEGRATION CRITIQUE : Passage des vraies données utilisateur au contexte
-      if (result.user) {
-        login(result.user);
-        router.push(redirectPath);
-      } else {
-        throw new Error("Réponse serveur invalide");
-      }
+      // Succès : Mise à jour du contexte (optionnel) et redirection
+      login({ 
+        id: result.user.id, 
+        email: result.user.email, 
+        companyName: result.user.companyName, 
+        isAuthenticated: true 
+      }); 
+      router.push(redirectPath);
       
     } catch (err: any) {
       setServerError(err.message);
